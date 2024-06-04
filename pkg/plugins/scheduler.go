@@ -2,12 +2,13 @@ package plugins
 
 import (
 	"context"
-	"log"
+	"encoding/json"
 	"fmt"
+	"log"
+
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kubernetes/pkg/scheduler/framework"
-	"encoding/json"
 )
 
 type CustomSchedulerArgs struct {
@@ -15,7 +16,7 @@ type CustomSchedulerArgs struct {
 }
 
 type CustomScheduler struct {
-	handle 	framework.Handle
+	handle    framework.Handle
 	scoreMode string
 }
 
@@ -24,11 +25,11 @@ var _ framework.ScorePlugin = &CustomScheduler{}
 
 // Name is the name of the plugin used in Registry and configurations.
 const (
-	Name				string = "CustomScheduler"
-	groupNameLabel 		string = "podGroup"
-	minAvailableLabel 	string = "minAvailable"
-	leastMode			string = "Least"
-	mostMode			string = "Most"			
+	Name              string = "CustomScheduler"
+	groupNameLabel    string = "podGroup"
+	minAvailableLabel string = "minAvailable"
+	leastMode         string = "Least"
+	mostMode          string = "Most"
 )
 
 func (cs *CustomScheduler) Name() string {
@@ -75,7 +76,6 @@ func (cs *CustomScheduler) PreFilterExtensions() framework.PreFilterExtensions {
 	return nil
 }
 
-
 // Score invoked at the score extension point.
 func (cs *CustomScheduler) Score(ctx context.Context, state *framework.CycleState, pod *v1.Pod, nodeName string) (int64, *framework.Status) {
 	log.Printf("Pod %s is in Score phase. Calculate the score of Node %s.", pod.Name, nodeName)
@@ -83,7 +83,7 @@ func (cs *CustomScheduler) Score(ctx context.Context, state *framework.CycleStat
 	// TODO
 	// 1. retrieve the node allocatable memory
 	// 2. return the score based on the scheduler mode
-	
+
 	return 0, nil
 }
 

@@ -1,11 +1,12 @@
 package main
 
 import (
-	"os"
 	"log"
+	"my-scheduler-plugins/pkg/plugins"
+	"os"
+
 	"k8s.io/component-base/cli"
 	"k8s.io/kubernetes/cmd/kube-scheduler/app"
-	"my-scheduler-plugins/pkg/plugins"
 )
 
 func main() {
