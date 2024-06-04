@@ -103,8 +103,19 @@ func (cs *CustomScheduler) Score(ctx context.Context, state *framework.CycleStat
 	// TODO
 	// 1. retrieve the node allocatable memory
 	// 2. return the score based on the scheduler mode
-
-	return 0, nil
+	nodeInfo, err := cs.handle.SnapshotSharedLister().NodeInfos().Get(nodeName)
+	if err != nil {
+		return 0, framework.NewStatus(framework.Error, err.Error())
+	}
+	allocatableMemory := nodeInfo.Allocatable.Memory
+	switch cs.scoreMode {
+	case "Most":
+		return allocatableMemory, framework.NewStatus(framework.Success, cs.scoreMode)
+	case "Least":
+		return -allocatableMemory, framework.NewStatus(framework.Success, cs.scoreMode)
+	default:
+		return 0, framework.NewStatus(framework.Error, "")
+	}
 }
 
 // ensure the scores are within the valid range
