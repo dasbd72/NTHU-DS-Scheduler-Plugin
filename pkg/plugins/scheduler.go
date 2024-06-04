@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kubernetes/pkg/scheduler/framework"
 )
@@ -67,6 +69,24 @@ func (cs *CustomScheduler) PreFilter(ctx context.Context, state *framework.Cycle
 	// 1. extract the label of the pod
 	// 2. retrieve the pod with the same group label
 	// 3. justify if the pod can be scheduled
+	podLabels := pod.GetObjectMeta().GetLabels()
+	podGroup, ok := podLabels["podGroup"]
+	if !ok {
+		return nil, newStatus
+	}
+	minAvailableStr, ok := podLabels["minAvailable"]
+	if !ok {
+		return nil, newStatus
+	}
+	minAvailable, err := strconv.Atoi(minAvailableStr)
+	if err != nil {
+		return nil, framework.NewStatus(framework.Error, err.Error())
+	}
+	selector := labels.SelectorFromSet(labels.Set{"podGroup": podGroup})
+	pods, _ := cs.handle.SharedInformerFactory().Core().V1().Pods().Lister().List(selector)
+	if len(pods) < minAvailable {
+		return nil, framework.NewStatus(framework.Unschedulable, "")
+	}
 
 	return nil, newStatus
 }
