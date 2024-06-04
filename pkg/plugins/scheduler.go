@@ -122,7 +122,19 @@ func (cs *CustomScheduler) Score(ctx context.Context, state *framework.CycleStat
 func (cs *CustomScheduler) NormalizeScore(ctx context.Context, state *framework.CycleState, pod *v1.Pod, scores framework.NodeScoreList) *framework.Status {
 	// TODO
 	// find the range of the current score and map to the valid range
-
+	var maxScore int64
+	var minScore int64
+	for i, score := range scores {
+		if i == 0 || score.Score > maxScore {
+			maxScore = score.Score
+		}
+		if i == 0 || score.Score < minScore {
+			minScore = score.Score
+		}
+	}
+	for i, score := range scores {
+		scores[i].Score = framework.MinNodeScore + int64(float64(score.Score-minScore)/float64(maxScore-minScore)*float64(framework.MaxNodeScore-framework.MinNodeScore))
+	}
 	return nil
 }
 
